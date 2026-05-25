@@ -1,7 +1,7 @@
-import { hamd } from './batteries/hamd';
+import { burns } from './batteries/burns';
 import type { Battery, CadenceItem, Question } from './types';
 
-export const batteries: Battery[] = [hamd];
+export const batteries: Battery[] = [burns];
 
 export const standaloneQuestions: Question[] = [
   {
@@ -22,7 +22,7 @@ export const standaloneQuestions: Question[] = [
 ];
 
 export const cadence: CadenceItem[] = [
-  { kind: 'battery', batteryId: 'hamd', every: 'week' },
+  { kind: 'battery', batteryId: 'burns', every: 'week' },
   { kind: 'question', questionId: 'hours_worked_week', every: 'week' },
 ];
 
