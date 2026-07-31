@@ -4,12 +4,24 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const items = [
-  { href: '/', label: 'Home' },
+  { href: '/inventories/home', label: 'Home' },
   { href: '/inventories', label: 'Inventories' },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
+
+  // The item whose href is the longest prefix of the current path is active,
+  // so /inventories/home highlights Home rather than both Home and Inventories.
+  const activeHref = items
+    .filter(
+      (item) => pathname === item.href || pathname.startsWith(item.href + '/'),
+    )
+    .reduce<string | null>(
+      (best, item) =>
+        best === null || item.href.length > best.length ? item.href : best,
+      null,
+    );
 
   return (
     <aside className="flex h-screen w-60 shrink-0 flex-col border-r border-zinc-200 bg-zinc-50 px-3 py-6 dark:border-zinc-800 dark:bg-zinc-950">
@@ -18,10 +30,7 @@ export function Sidebar() {
       </div>
       <nav className="flex flex-col gap-1">
         {items.map((item) => {
-          const active =
-            item.href === '/'
-              ? pathname === '/'
-              : pathname === item.href || pathname.startsWith(item.href + '/');
+          const active = item.href === activeHref;
           return (
             <Link
               key={item.href}
