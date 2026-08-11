@@ -7,10 +7,9 @@ export const metadata: Metadata = {
 };
 
 const MACOS_INSTALL_COMMAND =
-  'curl -fsSL https://raw.githubusercontent.com/alexshadley/space-roguelike/main/scripts/install-macos.sh | bash';
+  'curl -fsSL http://143.198.244.74:8080/install-macos.sh | bash';
 
-const WINDOWS_DOWNLOAD_URL =
-  'https://github.com/alexshadley/space-roguelike/releases/latest/download/space-roguelike-launcher-windows-amd64.exe';
+const WINDOWS_DOWNLOAD_URL = '/space-roguelike/download/windows';
 
 export default function SpaceRoguelike() {
   return (
@@ -37,7 +36,7 @@ export default function SpaceRoguelike() {
             latest version.
           </p>
           <div className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-950 p-4">
-            <code className="min-w-0 flex-1 overflow-x-auto whitespace-nowrap font-mono text-sm text-zinc-200">
+            <code className="min-w-0 flex-1 break-all font-mono text-sm text-zinc-200">
               {MACOS_INSTALL_COMMAND}
             </code>
             <CopyButton text={MACOS_INSTALL_COMMAND} />
