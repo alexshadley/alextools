@@ -9,7 +9,8 @@ export const metadata: Metadata = {
 const MACOS_INSTALL_COMMAND =
   'curl -fsSL http://143.198.244.74:8080/install-macos.sh | bash';
 
-const WINDOWS_DOWNLOAD_URL = '/space-roguelike/download/windows';
+const WINDOWS_DOWNLOAD_URL =
+  '/space-roguelike/download/space-roguelike-launcher-windows-amd64.exe';
 
 export default function SpaceRoguelike() {
   return (
