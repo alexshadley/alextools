@@ -10,7 +10,9 @@
 
 const ORIGIN =
   'http://143.198.244.74:8080/space-roguelike-launcher-windows-amd64.exe';
-const FILENAME = 'space-roguelike-launcher-windows-amd64.exe';
+// The name the browser saves the download as, via Content-Disposition. Decoupled
+// from the origin's build-artifact name so it reads as a friendly product name.
+const FILENAME = 'Space Roguelike Launcher.exe';
 
 // Never cache a 70+ MB binary at the edge; always stream from the origin.
 export const dynamic = 'force-dynamic';

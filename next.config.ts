@@ -14,7 +14,7 @@ const nextConfig: NextConfig = {
       // the game server sends no Content-Disposition header, so the browser
       // named the download after the URL path (extensionless). It is served by
       // the route handler at
-      // app/space-roguelike/download/space-roguelike-launcher-windows-amd64.exe/route.ts,
+      // app/space-roguelike/download/space-roguelike-launcher.exe/route.ts,
       // which adds Content-Disposition so the file saves as a proper .exe.
     ];
   },
