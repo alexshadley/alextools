@@ -2,14 +2,15 @@ import type { Metadata } from 'next';
 import { CopyButton } from './copy-button';
 
 export const metadata: Metadata = {
-  title: 'Space Roguelike',
-  description: 'Download Space Roguelike for macOS and Windows',
+  title: 'Rogue Space',
+  description: 'Download Rogue Space for macOS and Windows',
 };
 
 const MACOS_INSTALL_COMMAND =
   'curl -fsSL http://143.198.244.74:8080/install-macos.sh | bash';
 
-const WINDOWS_DOWNLOAD_URL = '/space-roguelike/download/windows';
+const WINDOWS_DOWNLOAD_URL =
+  '/space-roguelike/download/space-roguelike-launcher.exe';
 
 export default function SpaceRoguelike() {
   return (
@@ -17,7 +18,7 @@ export default function SpaceRoguelike() {
       <div className="mx-auto flex max-w-2xl flex-col gap-12 px-6 py-20">
         <header className="flex flex-col gap-3">
           <h1 className="text-4xl font-semibold tracking-tight">
-            Space Roguelike
+            Rogue Space
           </h1>
           <p className="text-base text-zinc-400">
             A roguelike set in space. Pick your platform below to get playing.

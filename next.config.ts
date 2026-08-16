@@ -9,14 +9,13 @@ const nextConfig: NextConfig = {
       // The game's realtime UDP traffic goes straight to the server and is
       // intentionally NOT proxied here.
       { source: "/space-town/:path*", destination: "http://143.198.244.74/:path*" },
-      // Serve the Space Roguelike Windows launcher over Vercel's TLS. Chrome
-      // blocks insecure HTTP .exe downloads, so we proxy the game server's
-      // port-8080 download surface instead of linking to it directly.
-      {
-        source: "/space-roguelike/download/windows",
-        destination:
-          "http://143.198.244.74:8080/space-roguelike-launcher-windows-amd64.exe",
-      },
+      // NOTE: The Space Roguelike Windows launcher is NOT proxied via a rewrite.
+      // Rewrites to an external URL stream the origin's response verbatim, and
+      // the game server sends no Content-Disposition header, so the browser
+      // named the download after the URL path (extensionless). It is served by
+      // the route handler at
+      // app/space-roguelike/download/space-roguelike-launcher.exe/route.ts,
+      // which adds Content-Disposition so the file saves as a proper .exe.
     ];
   },
 };
