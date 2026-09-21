@@ -2,26 +2,28 @@ import type { Metadata } from 'next';
 import { CopyButton } from '../components/copy-button';
 
 export const metadata: Metadata = {
-  title: 'Rogue Space',
-  description: 'Download Rogue Space for macOS and Windows',
+  title: 'Dungeon Game',
+  description: 'Download Dungeon Game for macOS and Windows',
 };
 
+// Dungeon Game's release server listens on its own port (each game on the box
+// gets one); Rogue Space is 8080, Space Town is 80.
 const MACOS_INSTALL_COMMAND =
-  'curl -fsSL http://143.198.244.74:8080/install-macos.sh | bash';
+  'curl -fsSL http://143.198.244.74:8081/install-macos.sh | bash';
 
 const WINDOWS_DOWNLOAD_URL =
-  '/space-roguelike/download/space-roguelike-launcher.exe';
+  '/dungeon-game/download/dungeon-game-launcher.exe';
 
-export default function SpaceRoguelike() {
+export default function DungeonGame() {
   return (
     <div className="min-h-screen bg-black text-zinc-50">
       <div className="mx-auto flex max-w-2xl flex-col gap-12 px-6 py-20">
         <header className="flex flex-col gap-3">
           <h1 className="text-4xl font-semibold tracking-tight">
-            Rogue Space
+            Dungeon Game
           </h1>
           <p className="text-base text-zinc-400">
-            A roguelike set in space. Pick your platform below to get playing.
+            Delve into the dungeon. Pick your platform below to get playing.
           </p>
         </header>
 
