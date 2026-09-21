@@ -9,13 +9,17 @@ const nextConfig: NextConfig = {
       // The game's realtime UDP traffic goes straight to the server and is
       // intentionally NOT proxied here.
       { source: "/space-town/:path*", destination: "http://143.198.244.74/:path*" },
-      // NOTE: The Space Roguelike Windows launcher is NOT proxied via a rewrite.
-      // Rewrites to an external URL stream the origin's response verbatim, and
-      // the game server sends no Content-Disposition header, so the browser
-      // named the download after the URL path (extensionless). It is served by
-      // the route handler at
-      // app/space-roguelike/download/space-roguelike-launcher.exe/route.ts,
-      // which adds Content-Disposition so the file saves as a proper .exe.
+      // NOTE: The Rogue Space and Dungeon Game Windows launchers are NOT
+      // proxied via rewrites. Rewrites to an external URL stream the origin's
+      // response verbatim, and the game servers send no Content-Disposition
+      // header, so the browser named the download after the URL path
+      // (extensionless). They are served by the route handlers at
+      // app/space-roguelike/download/space-roguelike-launcher.exe/route.ts and
+      // app/dungeon-game/download/dungeon-game-launcher.exe/route.ts, which add
+      // Content-Disposition so the files save as proper .exes.
+      //
+      // Each game has its own release server port on the box: Space Town 80,
+      // Rogue Space 8080, Dungeon Game 8081.
     ];
   },
 };
