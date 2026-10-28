@@ -70,13 +70,13 @@ function ProfileFields({ profile, onDone }: { profile: Profile; onDone: () => vo
             onChange={(e) => setWeight(e.target.value)}
             className={inputClass}
           />
-          <div className="flex overflow-hidden rounded-lg border border-zinc-200">
+          <div className="flex shrink-0 overflow-hidden rounded-lg border border-zinc-200">
             {(['lb', 'kg'] as const).map((u) => (
               <button
                 key={u}
                 type="button"
                 onClick={() => switchUnit(u)}
-                className={`px-3 text-sm ${unit === u ? 'bg-amber-500 text-white' : 'bg-white text-zinc-600'}`}
+                className={`px-3 text-sm ${unit === u ? 'bg-zinc-950 text-white' : 'bg-white text-zinc-600'}`}
               >
                 {u}
               </button>
@@ -86,13 +86,13 @@ function ProfileFields({ profile, onDone }: { profile: Profile; onDone: () => vo
       </label>
       <label className="flex flex-col gap-1 text-sm">
         Sex
-        <div className="flex overflow-hidden rounded-lg border border-zinc-200">
+        <div className="flex shrink-0 overflow-hidden rounded-lg border border-zinc-200">
           {(['male', 'female'] as const).map((s) => (
             <button
               key={s}
               type="button"
               onClick={() => setSex(s)}
-              className={`flex-1 py-2 text-sm capitalize ${sex === s ? 'bg-amber-500 text-white' : 'bg-white text-zinc-600'}`}
+              className={`flex-1 py-2 text-sm capitalize ${sex === s ? 'bg-zinc-950 text-white' : 'bg-white text-zinc-600'}`}
             >
               {s}
             </button>

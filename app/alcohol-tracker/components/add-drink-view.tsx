@@ -17,7 +17,7 @@ export function AddDrinkView({ id }: { id: string }) {
     return (
       <div className="flex flex-col gap-4">
         <p className="text-zinc-500">Session not found.</p>
-        <Link href="/alcohol-tracker" className="text-amber-600">
+        <Link href="/alcohol-tracker" className="text-zinc-900 underline underline-offset-4">
           ← Back to sessions
         </Link>
       </div>

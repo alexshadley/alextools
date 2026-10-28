@@ -29,7 +29,7 @@ export function SessionView({ id }: { id: string }) {
     return (
       <div className="flex flex-col gap-4">
         <p className="text-zinc-500">Session not found.</p>
-        <Link href="/alcohol-tracker" className="text-amber-600">
+        <Link href="/alcohol-tracker" className="text-zinc-900 underline underline-offset-4">
           ← Back to sessions
         </Link>
       </div>
@@ -84,7 +84,7 @@ export function SessionView({ id }: { id: string }) {
         <div className="flex items-baseline gap-2 px-4">
           <span className="font-mono text-5xl font-semibold tabular-nums">{formatBac(shownBac)}</span>
           <span className="text-zinc-500">%</span>
-          {!scrub && est.rising && <span className="text-sm text-amber-600">↑ rising</span>}
+          {!scrub && est.rising && <span className="text-sm text-zinc-500">↑ rising</span>}
         </div>
         <p className="min-h-10 px-4 text-sm text-zinc-500">{zone.description}</p>
         <div className="px-2">
