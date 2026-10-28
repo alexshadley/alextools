@@ -88,7 +88,6 @@ export function SessionView({ id }: { id: string }) {
           </span>
           {!scrub && est.rising && <span className="text-sm text-zinc-500">↑ rising</span>}
         </div>
-        <p className="min-h-10 px-4 text-sm text-zinc-500">{zone.description}</p>
         <div className="px-2">
           <BacChart drinks={session.drinks} profile={profile} stomach={session.stomach} now={now} onScrub={setScrub} />
         </div>
