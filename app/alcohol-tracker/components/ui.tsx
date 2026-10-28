@@ -3,20 +3,20 @@
 import type { Stage } from '../lib/bac';
 
 export const inputClass =
-  'w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-base text-zinc-50 outline-none focus:border-amber-500';
+  'w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-base text-zinc-900 outline-none focus:border-amber-500';
 
 export const buttonPrimary =
-  'rounded-lg bg-amber-500 px-4 py-2.5 text-base font-medium text-zinc-950 transition-colors hover:bg-amber-400 active:bg-amber-600 disabled:opacity-50';
+  'rounded-lg bg-amber-500 px-4 py-2.5 text-base font-medium text-white transition-colors hover:bg-amber-400 active:bg-amber-600 disabled:opacity-50';
 
 export const buttonSecondary =
-  'rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2.5 text-base text-zinc-100 transition-colors hover:bg-zinc-800 active:bg-zinc-700';
+  'rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-base text-zinc-900 transition-colors hover:bg-zinc-100 active:bg-zinc-200';
 
 const toneClasses: Record<Stage['tone'], string> = {
-  zinc: 'bg-zinc-800 text-zinc-200',
-  green: 'bg-emerald-900/60 text-emerald-300',
-  yellow: 'bg-yellow-900/60 text-yellow-300',
-  orange: 'bg-orange-900/60 text-orange-300',
-  red: 'bg-red-900/60 text-red-300',
+  zinc: 'bg-zinc-100 text-zinc-700',
+  green: 'bg-emerald-100 text-emerald-800',
+  yellow: 'bg-yellow-100 text-yellow-800',
+  orange: 'bg-orange-100 text-orange-800',
+  red: 'bg-red-100 text-red-800',
 };
 
 export function StageBadge({ stage }: { stage: Stage }) {

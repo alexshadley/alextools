@@ -15,8 +15,8 @@ export function AddDrinkView({ id }: { id: string }) {
   if (!session) {
     return (
       <div className="flex flex-col gap-4">
-        <p className="text-zinc-400">Session not found.</p>
-        <Link href="/alcohol-tracker" className="text-amber-400">
+        <p className="text-zinc-500">Session not found.</p>
+        <Link href="/alcohol-tracker" className="text-amber-600">
           ← Back to sessions
         </Link>
       </div>
@@ -26,7 +26,7 @@ export function AddDrinkView({ id }: { id: string }) {
   return (
     <>
       <header className="flex flex-col gap-2">
-        <Link href={back} className="text-sm text-zinc-400">
+        <Link href={back} className="text-sm text-zinc-500">
           ← {session.name}
         </Link>
         <h1 className="text-2xl font-semibold tracking-tight">Add a drink</h1>

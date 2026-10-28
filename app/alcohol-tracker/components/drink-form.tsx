@@ -48,7 +48,7 @@ export function DrinkForm({ sessionId, onAdded }: { sessionId: string; onAdded?:
   };
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-3 rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
+    <form onSubmit={submit} className="flex flex-col gap-3 rounded-xl border border-zinc-200 bg-white p-4">
       <div className="grid grid-cols-3 gap-2">
         {PRESETS.map((p) => (
           <button
@@ -57,8 +57,8 @@ export function DrinkForm({ sessionId, onAdded }: { sessionId: string; onAdded?:
             onClick={() => choose(p)}
             className={`rounded-lg border px-2 py-2 text-sm ${
               preset?.label === p.label
-                ? 'border-amber-500 bg-amber-500/10 text-amber-300'
-                : 'border-zinc-800 bg-zinc-900 text-zinc-300'
+                ? 'border-amber-500 bg-amber-500/10 text-amber-700'
+                : 'border-zinc-200 bg-white text-zinc-600'
             }`}
           >
             {p.label}
@@ -76,7 +76,7 @@ export function DrinkForm({ sessionId, onAdded }: { sessionId: string; onAdded?:
           className={inputClass}
         />
         <div className="grid grid-cols-2 gap-2">
-        <label className="flex items-center gap-1 text-sm text-zinc-400">
+        <label className="flex items-center gap-1 text-sm text-zinc-500">
           <input
             type="number"
             inputMode="decimal"
@@ -91,7 +91,7 @@ export function DrinkForm({ sessionId, onAdded }: { sessionId: string; onAdded?:
           />
           oz
         </label>
-        <label className="flex items-center gap-1 text-sm text-zinc-400">
+        <label className="flex items-center gap-1 text-sm text-zinc-500">
           <input
             type="number"
             inputMode="decimal"
@@ -124,7 +124,7 @@ export function DrinkForm({ sessionId, onAdded }: { sessionId: string; onAdded?:
               setTime(toLocalInput(Date.now()));
               setEditTime(true);
             }}
-            className="text-zinc-400 underline decoration-dotted underline-offset-4"
+            className="text-zinc-500 underline decoration-dotted underline-offset-4"
           >
             Time: now (tap to change)
           </button>

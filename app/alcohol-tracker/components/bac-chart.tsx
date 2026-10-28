@@ -26,8 +26,8 @@ const DOMAIN_PAD_MS = 10 * MIN_MS;
 
 // Marks wear the accent; text wears zinc text tokens.
 const ACCENT = '#f59e0b';
-const SURFACE = '#111113';
-const INK = { primary: '#fafafa', secondary: '#a1a1aa', muted: '#71717a', grid: '#3f3f46' };
+const SURFACE = '#ffffff';
+const INK = { primary: '#18181b', secondary: '#52525b', muted: '#71717a', grid: '#d4d4d8' };
 
 const hourLabel = (ts: number) =>
   new Date(ts).toLocaleTimeString(undefined, { hour: 'numeric' }).replace(' ', ' ');
@@ -188,7 +188,7 @@ export function BacChart({ drinks, profile, now, onScrub }: Props) {
           ))}
 
           {/* Area wash */}
-          <path d={areaPath} fill={ACCENT} fillOpacity={0.1} />
+          <path d={areaPath} fill={ACCENT} fillOpacity={0.12} />
 
           {/* Curve: solid past, lighter projection */}
           {pastPts.length > 1 && (

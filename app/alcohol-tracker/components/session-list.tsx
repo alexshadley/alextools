@@ -24,7 +24,7 @@ export function SessionList() {
     <>
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold tracking-tight">Alcohol Tracker</h1>
-        <p className="text-sm text-zinc-400">Log drinks, see where you&apos;re at.</p>
+        <p className="text-sm text-zinc-500">Log drinks, see where you&apos;re at.</p>
       </header>
 
       <button type="button" onClick={start} className={buttonPrimary}>
@@ -32,11 +32,11 @@ export function SessionList() {
       </button>
 
       <section className="flex flex-col gap-2">
-        <h2 className="text-sm font-medium text-zinc-400">Sessions</h2>
+        <h2 className="text-sm font-medium text-zinc-500">Sessions</h2>
         {!hydrated ? null : sessions.length === 0 ? (
           <p className="text-sm text-zinc-500">No sessions yet. Start one above.</p>
         ) : (
-          <ul className="flex flex-col divide-y divide-zinc-800 rounded-xl border border-zinc-800 bg-zinc-900/50">
+          <ul className="flex flex-col divide-y divide-zinc-200 rounded-xl border border-zinc-200 bg-white">
             {sessions.map((s) => {
               const est = estimate(s.drinks, profile, now);
               const active = est.bac > 0;
@@ -45,11 +45,11 @@ export function SessionList() {
                 <li key={s.id}>
                   <Link
                     href={`/alcohol-tracker/session/${s.id}`}
-                    className="flex items-center gap-3 px-4 py-3 hover:bg-zinc-800/50"
+                    className="flex items-center gap-3 px-4 py-3 hover:bg-zinc-100"
                   >
                     <div className="flex min-w-0 flex-1 flex-col">
                       <span className="truncate font-medium">{s.name}</span>
-                      <span className="text-xs text-zinc-400">
+                      <span className="text-xs text-zinc-500">
                         {new Date(s.createdAt).toLocaleString(undefined, {
                           month: 'short',
                           day: 'numeric',
@@ -66,7 +66,7 @@ export function SessionList() {
                         <StageBadge stage={stageFor(est.bac)} />
                       </div>
                     ) : (
-                      <span className="text-zinc-600">›</span>
+                      <span className="text-zinc-400">›</span>
                     )}
                   </Link>
                 </li>

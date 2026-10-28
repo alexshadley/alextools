@@ -12,14 +12,14 @@ export function ProfileForm() {
   const [open, setOpen] = useState(false);
 
   return (
-    <section className="rounded-xl border border-zinc-800 bg-zinc-900/50">
+    <section className="rounded-xl border border-zinc-200 bg-white">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
         className="flex w-full items-center justify-between px-4 py-3 text-left"
       >
         <span className="text-sm font-medium">Your profile</span>
-        <span className="text-xs text-zinc-400">
+        <span className="text-xs text-zinc-500">
           {Math.round(profile.weightKg * LB_PER_KG)} lb · {profile.sex}
           <span className="ml-2">{open ? '▴' : '▾'}</span>
         </span>
@@ -54,8 +54,8 @@ function ProfileFields({ profile, onDone }: { profile: Profile; onDone: () => vo
   };
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-3 border-t border-zinc-800 px-4 py-4">
-      <p className="text-xs text-zinc-400">
+    <form onSubmit={submit} className="flex flex-col gap-3 border-t border-zinc-200 px-4 py-4">
+      <p className="text-xs text-zinc-500">
         Used in the Widmark formula. Sex selects the body-water ratio (0.68 for male, 0.55 for
         female); pick whichever better matches your body composition.
       </p>
@@ -70,13 +70,13 @@ function ProfileFields({ profile, onDone }: { profile: Profile; onDone: () => vo
             onChange={(e) => setWeight(e.target.value)}
             className={inputClass}
           />
-          <div className="flex overflow-hidden rounded-lg border border-zinc-800">
+          <div className="flex overflow-hidden rounded-lg border border-zinc-200">
             {(['lb', 'kg'] as const).map((u) => (
               <button
                 key={u}
                 type="button"
                 onClick={() => switchUnit(u)}
-                className={`px-3 text-sm ${unit === u ? 'bg-amber-500 text-zinc-950' : 'bg-zinc-900 text-zinc-300'}`}
+                className={`px-3 text-sm ${unit === u ? 'bg-amber-500 text-white' : 'bg-white text-zinc-600'}`}
               >
                 {u}
               </button>
@@ -86,13 +86,13 @@ function ProfileFields({ profile, onDone }: { profile: Profile; onDone: () => vo
       </label>
       <label className="flex flex-col gap-1 text-sm">
         Sex
-        <div className="flex overflow-hidden rounded-lg border border-zinc-800">
+        <div className="flex overflow-hidden rounded-lg border border-zinc-200">
           {(['male', 'female'] as const).map((s) => (
             <button
               key={s}
               type="button"
               onClick={() => setSex(s)}
-              className={`flex-1 py-2 text-sm capitalize ${sex === s ? 'bg-amber-500 text-zinc-950' : 'bg-zinc-900 text-zinc-300'}`}
+              className={`flex-1 py-2 text-sm capitalize ${sex === s ? 'bg-amber-500 text-white' : 'bg-white text-zinc-600'}`}
             >
               {s}
             </button>
