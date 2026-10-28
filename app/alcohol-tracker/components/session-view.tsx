@@ -7,7 +7,7 @@ import { estimate, zoneFor } from '../lib/bac';
 import { deleteSession, removeDrink, updateSession, useHydrated, useProfile, useSession } from '../lib/storage';
 import { BacChart, type ScrubPoint } from './bac-chart';
 import { ProfileForm } from './profile-form';
-import { ZoneBadge, buttonPrimary, buttonSecondary, formatBac, formatBacParts, formatDuration, formatTime, inputClass } from './ui';
+import { ZoneBadge, buttonPrimary, buttonSecondary, formatBacParts, formatTime, inputClass } from './ui';
 import { useNow } from './use-now';
 
 export function SessionView({ id }: { id: string }) {
@@ -38,7 +38,6 @@ export function SessionView({ id }: { id: string }) {
 
   const shownBac = scrub ? scrub.bac : est.bac;
   const zone = zoneFor(shownBac);
-  const totalStd = session.drinks.reduce((sum, d) => sum + d.standardDrinks, 0);
   const drinks = [...session.drinks].sort((a, b) => b.time - a.time);
 
   return (
@@ -98,30 +97,6 @@ export function SessionView({ id }: { id: string }) {
         + Add drink
       </Link>
 
-      <dl className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-xl border border-zinc-200 bg-white p-4 text-sm">
-        <dt className="text-zinc-500">Drinks</dt>
-        <dd className="text-right tabular-nums">
-          {session.drinks.length} · {totalStd.toFixed(1)} std
-        </dd>
-        <dt className="text-zinc-500">Peak</dt>
-        <dd className="text-right font-mono tabular-nums">{formatBac(est.peak)}</dd>
-        {est.legalAt !== null && (
-          <>
-            <dt className="text-zinc-500">Under 0.08</dt>
-            <dd className="text-right tabular-nums">
-              {formatTime(est.legalAt)} · {formatDuration(est.legalAt - now)}
-            </dd>
-          </>
-        )}
-        {est.soberAt !== null && (
-          <>
-            <dt className="text-zinc-500">Sober</dt>
-            <dd className="text-right tabular-nums">
-              {formatTime(est.soberAt)} · {formatDuration(est.soberAt - now)}
-            </dd>
-          </>
-        )}
-      </dl>
 
       <section className="flex flex-col gap-2">
         <h2 className="text-sm font-medium text-zinc-500">Log</h2>
