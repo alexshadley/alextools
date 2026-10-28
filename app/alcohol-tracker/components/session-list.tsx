@@ -38,7 +38,7 @@ export function SessionList() {
         ) : (
           <ul className="flex flex-col divide-y divide-zinc-200 rounded-xl border border-zinc-200 bg-white">
             {sessions.map((s) => {
-              const est = estimate(s.drinks, profile, now);
+              const est = estimate(s.drinks, profile, now, s.stomach);
               const active = est.bac > 0;
               const total = s.drinks.reduce((sum, d) => sum + d.standardDrinks, 0);
               return (

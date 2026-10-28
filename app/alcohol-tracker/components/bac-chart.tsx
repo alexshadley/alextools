@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { Drink, Profile } from '../lib/bac';
+import type { Drink, Profile, Stomach } from '../lib/bac';
 import { simulate, zoneFor, ZONE_THRESHOLDS } from '../lib/bac';
 import { formatBac, formatTime } from './ui';
 
@@ -10,6 +10,7 @@ export type ScrubPoint = { time: number; bac: number };
 type Props = {
   drinks: Drink[];
   profile: Profile;
+  stomach: Stomach;
   now: number;
   onScrub: (p: ScrubPoint | null) => void;
 };
@@ -66,7 +67,7 @@ const INK = { primary: '#18181b', secondary: '#52525b', muted: '#71717a', grid: 
 const hourLabel = (ts: number) =>
   new Date(ts).toLocaleTimeString(undefined, { hour: 'numeric' }).replace(' ', ' ');
 
-export function BacChart({ drinks, profile, now, onScrub }: Props) {
+export function BacChart({ drinks, profile, stomach, now, onScrub }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const [width, setWidth] = useState(0);
@@ -84,7 +85,7 @@ export function BacChart({ drinks, profile, now, onScrub }: Props) {
     if (drinks.length === 0) return null;
     const lastDrink = Math.max(...drinks.map((d) => d.time));
     const horizon = Math.max(now, lastDrink) + 24 * 3_600_000;
-    const full = simulate(drinks, profile, horizon);
+    const full = simulate(drinks, profile, horizon, stomach);
     // Trim the flat zero tail: keep one point past the last non-zero minute.
     let lastNonZero = 0;
     for (let i = 0; i < full.length; i++) if (full[i][1] > 0) lastNonZero = i;
@@ -97,7 +98,7 @@ export function BacChart({ drinks, profile, now, onScrub }: Props) {
     const x1 = curve[curve.length - 1][0] + DOMAIN_PAD_MS;
     const yMax = Math.max(curve[peakIdx][1], 0.02) * 1.1;
     return { curve, peakIdx, x0, x1, yMax };
-  }, [drinks, profile, now]);
+  }, [drinks, profile, stomach, now]);
 
   if (!model) {
     return (

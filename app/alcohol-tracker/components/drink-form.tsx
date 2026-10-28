@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { estimate, zoneFor, zoneIndex, type Drink, type Profile } from '../lib/bac';
+import { estimate, zoneFor, zoneIndex, type Drink, type Profile, type Stomach } from '../lib/bac';
 import { addDrink } from '../lib/storage';
 import { ZoneBadge, buttonPrimary, buttonSecondary, formatBac, formatTime, inputClass } from './ui';
 
@@ -33,10 +33,11 @@ type Props = {
   sessionId: string;
   drinks: Drink[];
   profile: Profile;
+  stomach: Stomach;
   onAdded?: () => void;
 };
 
-export function DrinkForm({ sessionId, drinks, profile, onAdded }: Props) {
+export function DrinkForm({ sessionId, drinks, profile, stomach, onAdded }: Props) {
   const [std, setStd] = useState(DEFAULT_STD);
   // 'now' or a slot timestamp as a string (select values are strings).
   const [when, setWhen] = useState<string>('now');
@@ -56,15 +57,15 @@ export function DrinkForm({ sessionId, drinks, profile, onAdded }: Props) {
   const preview = useMemo(() => {
     const time = when === 'now' ? openedAt : Number(when);
     const candidate: Drink = { id: 'preview', standardDrinks: std, time };
-    const withDrink = estimate([...drinks, candidate], profile, openedAt);
-    const without = estimate(drinks, profile, openedAt);
+    const withDrink = estimate([...drinks, candidate], profile, openedAt, stomach);
+    const without = estimate(drinks, profile, openedAt, stomach);
     return {
       peak: withDrink.peak,
       peakAt: withDrink.peakAt,
       zone: zoneFor(withDrink.peak),
       currentZone: drinks.length > 0 ? zoneFor(without.peak) : null,
     };
-  }, [drinks, profile, std, when, openedAt]);
+  }, [drinks, profile, stomach, std, when, openedAt]);
 
   const bump = (delta: number) =>
     setStd((v) => Math.min(MAX, Math.max(MIN, Math.round((v + delta) / STEP) * STEP)));

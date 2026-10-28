@@ -7,6 +7,7 @@ import { estimate, zoneFor } from '../lib/bac';
 import { deleteSession, removeDrink, updateSession, useHydrated, useProfile, useSession } from '../lib/storage';
 import { BacChart, type ScrubPoint } from './bac-chart';
 import { ProfileForm } from './profile-form';
+import { StomachForm } from './stomach-form';
 import { ZoneBadge, buttonPrimary, buttonSecondary, formatBacParts, formatTime, inputClass } from './ui';
 import { useNow } from './use-now';
 
@@ -20,7 +21,7 @@ export function SessionView({ id }: { id: string }) {
   const [scrub, setScrub] = useState<ScrubPoint | null>(null);
 
   const est = useMemo(
-    () => (session ? estimate(session.drinks, profile, now) : null),
+    () => (session ? estimate(session.drinks, profile, now, session.stomach) : null),
     [session, profile, now],
   );
 
@@ -89,7 +90,7 @@ export function SessionView({ id }: { id: string }) {
         </div>
         <p className="min-h-10 px-4 text-sm text-zinc-500">{zone.description}</p>
         <div className="px-2">
-          <BacChart drinks={session.drinks} profile={profile} now={now} onScrub={setScrub} />
+          <BacChart drinks={session.drinks} profile={profile} stomach={session.stomach} now={now} onScrub={setScrub} />
         </div>
       </section>
 
@@ -132,6 +133,8 @@ export function SessionView({ id }: { id: string }) {
         )}
       </section>
 
+      <StomachForm sessionId={id} value={session.stomach} />
+
       <ProfileForm />
 
       <button
@@ -148,8 +151,8 @@ export function SessionView({ id }: { id: string }) {
       </button>
 
       <p className="text-xs text-zinc-400">
-        Estimates use the Widmark formula with a 30-minute absorption ramp and 0.015%/hr
-        elimination. Real BAC varies widely with food, medication, and individual metabolism.
+        Estimates use the Widmark formula with first-order absorption (rate set by stomach
+        contents) and 0.015%/hr elimination. Real BAC varies widely with food, medication, and individual metabolism.
         Never use this to decide whether you can drive.
       </p>
     </>

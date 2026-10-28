@@ -32,7 +32,7 @@ export function AddDrinkView({ id }: { id: string }) {
         </Link>
         <h1 className="text-2xl font-semibold tracking-tight">Add a drink</h1>
       </header>
-      <DrinkForm sessionId={id} drinks={session.drinks} profile={profile} onAdded={() => router.push(back)} />
+      <DrinkForm sessionId={id} drinks={session.drinks} profile={profile} stomach={session.stomach} onAdded={() => router.push(back)} />
     </>
   );
 }

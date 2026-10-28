@@ -4,13 +4,15 @@
 // A tiny pub/sub lets every mounted component re-render on any write.
 
 import { useSyncExternalStore } from 'react';
-import { standardDrinksFromPour, type Drink, type Profile } from './bac';
+import { DEFAULT_STOMACH, standardDrinksFromPour, type Drink, type Profile, type Stomach } from './bac';
 
 export type Session = {
   id: string;
   name: string;
   createdAt: number;
   drinks: Drink[];
+  /** What was in the stomach while drinking; drives absorption speed */
+  stomach: Stomach;
 };
 
 const SESSIONS_KEY = 'alcohol-tracker:sessions';
@@ -43,6 +45,7 @@ type LegacyDrink = { id: string; time: number; volumeMl?: number; abv?: number; 
 function migrateSession(s: Session): Session {
   return {
     ...s,
+    stomach: s.stomach ?? DEFAULT_STOMACH,
     drinks: (s.drinks as LegacyDrink[]).map((d) => ({
       id: d.id,
       time: d.time,
@@ -125,6 +128,7 @@ export function createSession(name?: string): Session {
     name: name?.trim() || defaultSessionName(now),
     createdAt: now,
     drinks: [],
+    stomach: DEFAULT_STOMACH,
   };
   writeSessions([session, ...readSessions()]);
   return session;
