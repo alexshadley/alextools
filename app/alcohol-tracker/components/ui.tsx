@@ -29,8 +29,15 @@ export function ZoneBadge({ zone }: { zone: Zone }) {
   );
 }
 
+/** Compact BAC: no leading zero, two decimals, no unit — e.g. ".08". */
 export function formatBac(bac: number): string {
-  return bac.toFixed(3);
+  return bac.toFixed(2).replace(/^0/, '');
+}
+
+/** Same as formatBac but with the third decimal split out for de-emphasis. */
+export function formatBacParts(bac: number): { main: string; faint: string } {
+  const s = bac.toFixed(3).replace(/^0/, '');
+  return { main: s.slice(0, -1), faint: s.slice(-1) };
 }
 
 export function formatTime(ts: number): string {

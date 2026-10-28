@@ -57,12 +57,12 @@ export function SessionList() {
                           minute: '2-digit',
                         })}{' '}
                         · {s.drinks.length} drink{s.drinks.length === 1 ? '' : 's'} ·{' '}
-                        {total.toFixed(1)} std · peak {formatBac(est.peak)}%
+                        {total.toFixed(1)} std · peak {formatBac(est.peak)}
                       </span>
                     </div>
                     {active ? (
                       <div className="flex flex-col items-end gap-1">
-                        <span className="font-mono text-sm tabular-nums">{formatBac(est.bac)}%</span>
+                        <span className="font-mono text-sm tabular-nums">{formatBac(est.bac)}</span>
                         <ZoneBadge zone={zoneFor(est.bac)} />
                       </div>
                     ) : (

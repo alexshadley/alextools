@@ -7,7 +7,7 @@ import { estimate, zoneFor } from '../lib/bac';
 import { deleteSession, removeDrink, updateSession, useHydrated, useProfile, useSession } from '../lib/storage';
 import { BacChart, type ScrubPoint } from './bac-chart';
 import { ProfileForm } from './profile-form';
-import { ZoneBadge, buttonPrimary, buttonSecondary, formatBac, formatDuration, formatTime, inputClass } from './ui';
+import { ZoneBadge, buttonPrimary, buttonSecondary, formatBac, formatBacParts, formatDuration, formatTime, inputClass } from './ui';
 import { useNow } from './use-now';
 
 export function SessionView({ id }: { id: string }) {
@@ -82,8 +82,10 @@ export function SessionView({ id }: { id: string }) {
           <ZoneBadge zone={zone} />
         </div>
         <div className="flex items-baseline gap-2 px-4">
-          <span className="font-mono text-5xl font-semibold tabular-nums">{formatBac(shownBac)}</span>
-          <span className="text-zinc-500">%</span>
+          <span className="font-mono text-5xl font-semibold tabular-nums" style={{ color: zone.color }}>
+            {formatBacParts(shownBac).main}
+            <span className="opacity-40">{formatBacParts(shownBac).faint}</span>
+          </span>
           {!scrub && est.rising && <span className="text-sm text-zinc-500">↑ rising</span>}
         </div>
         <p className="min-h-10 px-4 text-sm text-zinc-500">{zone.description}</p>
@@ -102,7 +104,7 @@ export function SessionView({ id }: { id: string }) {
           {session.drinks.length} · {totalStd.toFixed(1)} std
         </dd>
         <dt className="text-zinc-500">Peak</dt>
-        <dd className="text-right font-mono tabular-nums">{formatBac(est.peak)}%</dd>
+        <dd className="text-right font-mono tabular-nums">{formatBac(est.peak)}</dd>
         {est.legalAt !== null && (
           <>
             <dt className="text-zinc-500">Under 0.08</dt>

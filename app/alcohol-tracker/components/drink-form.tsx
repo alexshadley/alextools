@@ -139,7 +139,7 @@ export function DrinkForm({ sessionId, drinks, profile, onAdded }: Props) {
           <ZoneBadge zone={preview.zone} />
         </div>
         <p className="text-xs text-zinc-500">
-          <span className="font-mono tabular-nums">{formatBac(preview.peak)}%</span>
+          <span className="font-mono tabular-nums">{formatBac(preview.peak)}</span>
           {preview.peakAt !== null && <> at {formatTime(preview.peakAt)}</>}
           {preview.currentZone && zoneIndex(preview.zone) > zoneIndex(preview.currentZone) && (
             <> · up from the {preview.currentZone.label.toLowerCase()}</>

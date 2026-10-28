@@ -226,7 +226,7 @@ export function BacChart({ drinks, profile, now, onScrub }: Props) {
             <g key={th}>
               <line x1={PAD.left} x2={W - PAD.right} y1={y(th)} y2={y(th)} stroke={INK.grid} strokeWidth={1} />
               <text x={W - PAD.right} y={y(th) - 3} textAnchor="end" fontSize={9} fill={INK.muted} fontFamily={FONT}>
-                {th.toFixed(2)}
+                {formatBac(th)}
               </text>
             </g>
           ))}
