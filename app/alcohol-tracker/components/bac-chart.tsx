@@ -115,7 +115,7 @@ export function BacChart({ drinks, profile, now, onScrub }: Props) {
   for (const d of sortedDrinks) {
     const i = idxAt(d.time);
     const cx = x(curve[i][0]);
-    const text = d.label;
+    const text = `${d.standardDrinks.toFixed(1)}×`;
     const w = text.length * 5.6 + 8;
     // Keep the label inside the plot; the leader still points at the dot.
     const tx = Math.min(Math.max(cx, PAD.left + w / 2), W - PAD.right - w / 2);

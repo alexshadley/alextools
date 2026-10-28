@@ -4,7 +4,7 @@
 // A tiny pub/sub lets every mounted component re-render on any write.
 
 import { useSyncExternalStore } from 'react';
-import type { Drink, Profile } from './bac';
+import { standardDrinksFromPour, type Drink, type Profile } from './bac';
 
 export type Session = {
   id: string;
@@ -37,6 +37,20 @@ function subscribe(cb: () => void) {
 // useSyncExternalStore needs referentially stable snapshots, so cache the
 // parsed value keyed on the raw string.
 const EMPTY_SESSIONS: Session[] = [];
+
+// Drinks used to be stored as a pour (volume + ABV); convert on read.
+type LegacyDrink = { id: string; time: number; volumeMl?: number; abv?: number; standardDrinks?: number };
+function migrateSession(s: Session): Session {
+  return {
+    ...s,
+    drinks: (s.drinks as LegacyDrink[]).map((d) => ({
+      id: d.id,
+      time: d.time,
+      standardDrinks:
+        d.standardDrinks ?? (d.volumeMl && d.abv ? standardDrinksFromPour(d.volumeMl, d.abv) : 1),
+    })),
+  };
+}
 let sessionsRaw: string | null = null;
 let sessionsCache: Session[] = EMPTY_SESSIONS;
 function readSessions(): Session[] {
@@ -44,7 +58,7 @@ function readSessions(): Session[] {
   if (raw !== sessionsRaw) {
     sessionsRaw = raw;
     try {
-      sessionsCache = raw ? (JSON.parse(raw) as Session[]) : EMPTY_SESSIONS;
+      sessionsCache = raw ? (JSON.parse(raw) as Session[]).map(migrateSession) : EMPTY_SESSIONS;
     } catch {
       sessionsCache = EMPTY_SESSIONS;
     }

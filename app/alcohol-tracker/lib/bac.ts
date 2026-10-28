@@ -16,10 +16,8 @@ export type Profile = {
 
 export type Drink = {
   id: string;
-  label: string;
-  volumeMl: number;
-  /** Alcohol by volume as a fraction, e.g. 0.05 for 5% */
-  abv: number;
+  /** Size in US standard drinks (14 g of ethanol each) */
+  standardDrinks: number;
   /** Unix ms when the drink was started */
   time: number;
 };
@@ -34,12 +32,13 @@ export const ABSORPTION_MINUTES = 30;
 
 const WIDMARK_R: Record<Sex, number> = { male: 0.68, female: 0.55 };
 
-export function alcoholGrams(drink: Pick<Drink, 'volumeMl' | 'abv'>): number {
-  return drink.volumeMl * drink.abv * ETHANOL_DENSITY_G_PER_ML;
+export function alcoholGrams(drink: Pick<Drink, 'standardDrinks'>): number {
+  return drink.standardDrinks * STANDARD_DRINK_GRAMS;
 }
 
-export function standardDrinks(drink: Pick<Drink, 'volumeMl' | 'abv'>): number {
-  return alcoholGrams(drink) / STANDARD_DRINK_GRAMS;
+/** Standard drinks in a volume/ABV pour, used to migrate older stored drinks. */
+export function standardDrinksFromPour(volumeMl: number, abv: number): number {
+  return (volumeMl * abv * ETHANOL_DENSITY_G_PER_ML) / STANDARD_DRINK_GRAMS;
 }
 
 /** Peak %BAC contribution of a drink once fully absorbed. */

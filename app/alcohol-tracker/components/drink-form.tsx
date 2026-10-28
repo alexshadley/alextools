@@ -1,137 +1,104 @@
 'use client';
 
-import { useState } from 'react';
-import { standardDrinks } from '../lib/bac';
+import { useMemo, useState } from 'react';
 import { addDrink } from '../lib/storage';
-import { buttonPrimary, inputClass, toLocalInput } from './ui';
+import { buttonPrimary, buttonSecondary, formatTime, inputClass } from './ui';
 
-type Preset = { label: string; volumeMl: number; abv: number };
+const STEP = 0.5;
+const MIN = 0.5;
+const MAX = 10;
+const DEFAULT_STD = 1.5;
+const SLOT_MS = 30 * 60_000;
+const HOURS_BACK = 12;
 
-const OZ_ML = 29.5735;
-const PRESETS: Preset[] = [
-  { label: 'Beer', volumeMl: 12 * OZ_ML, abv: 0.05 },
-  { label: 'IPA', volumeMl: 16 * OZ_ML, abv: 0.065 },
-  { label: 'Wine', volumeMl: 5 * OZ_ML, abv: 0.12 },
-  { label: 'Shot', volumeMl: 1.5 * OZ_ML, abv: 0.4 },
-  { label: 'Cocktail', volumeMl: 1.5 * OZ_ML, abv: 0.4 },
-  { label: 'Seltzer', volumeMl: 12 * OZ_ML, abv: 0.05 },
-];
+/** Most recent clock time at or before `now` on a :00 / :30 boundary. */
+function floorToSlot(now: number): number {
+  const d = new Date(now);
+  d.setSeconds(0, 0);
+  d.setMinutes(d.getMinutes() < 30 ? 0 : 30);
+  return d.getTime();
+}
+
+function agoLabel(ms: number): string {
+  const mins = Math.round(ms / 60_000);
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  if (h === 0) return `${m} min ago`;
+  if (m === 0) return `${h} hr ago`;
+  return `${h} hr ${m} min ago`;
+}
 
 export function DrinkForm({ sessionId, onAdded }: { sessionId: string; onAdded?: () => void }) {
-  const [preset, setPreset] = useState<Preset | null>(PRESETS[0]);
-  const [label, setLabel] = useState(PRESETS[0].label);
-  const [volumeOz, setVolumeOz] = useState(String(12));
-  const [abvPct, setAbvPct] = useState(String(5));
-  const [time, setTime] = useState(() => toLocalInput(Date.now()));
-  const [editTime, setEditTime] = useState(false);
+  const [std, setStd] = useState(DEFAULT_STD);
+  // 'now' or a slot timestamp as a string (select values are strings).
+  const [when, setWhen] = useState<string>('now');
 
-  const choose = (p: Preset) => {
-    setPreset(p);
-    setLabel(p.label);
-    setVolumeOz(String(Math.round((p.volumeMl / OZ_ML) * 10) / 10));
-    setAbvPct(String(p.abv * 100));
-  };
+  // Capture `now` once per mount so the option list doesn't shift under the user.
+  const [openedAt] = useState(() => Date.now());
+  const slots = useMemo(() => {
+    const out: number[] = [];
+    const first = floorToSlot(openedAt);
+    for (let t = first; t >= openedAt - HOURS_BACK * 3_600_000; t -= SLOT_MS) out.push(t);
+    return out;
+  }, [openedAt]);
 
-  const volumeMl = parseFloat(volumeOz) * OZ_ML;
-  const abv = parseFloat(abvPct) / 100;
-  const valid = volumeMl > 0 && abv > 0 && abv <= 1 && label.trim().length > 0;
-  const std = valid ? standardDrinks({ volumeMl, abv }) : 0;
+  const bump = (delta: number) =>
+    setStd((v) => Math.min(MAX, Math.max(MIN, Math.round((v + delta) / STEP) * STEP)));
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!valid) return;
-    const ts = editTime ? new Date(time).getTime() : Date.now();
-    addDrink(sessionId, { label: label.trim(), volumeMl, abv, time: ts });
-    setTime(toLocalInput(Date.now()));
-    setEditTime(false);
+    const time = when === 'now' ? Date.now() : Number(when);
+    addDrink(sessionId, { standardDrinks: std, time });
     onAdded?.();
   };
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-3 rounded-xl border border-zinc-200 bg-white p-4">
-      <div className="grid grid-cols-3 gap-2">
-        {PRESETS.map((p) => (
-          <button
-            key={p.label}
-            type="button"
-            onClick={() => choose(p)}
-            className={`rounded-lg border px-2 py-2 text-sm ${
-              preset?.label === p.label
-                ? 'border-amber-500 bg-amber-500/10 text-amber-700'
-                : 'border-zinc-200 bg-white text-zinc-600'
-            }`}
-          >
-            {p.label}
-          </button>
-        ))}
-      </div>
+    <form onSubmit={submit} className="flex flex-col gap-5 rounded-xl border border-zinc-200 bg-white p-4">
       <div className="flex flex-col gap-2">
-        <input
-          value={label}
-          onChange={(e) => {
-            setLabel(e.target.value);
-            setPreset(null);
-          }}
-          placeholder="Name"
-          className={inputClass}
-        />
-        <div className="grid grid-cols-2 gap-2">
-        <label className="flex items-center gap-1 text-sm text-zinc-500">
-          <input
-            type="number"
-            inputMode="decimal"
-            step="0.5"
-            min={0}
-            value={volumeOz}
-            onChange={(e) => {
-              setVolumeOz(e.target.value);
-              setPreset(null);
-            }}
-            className={inputClass}
-          />
-          oz
-        </label>
-        <label className="flex items-center gap-1 text-sm text-zinc-500">
-          <input
-            type="number"
-            inputMode="decimal"
-            step="0.5"
-            min={0}
-            max={100}
-            value={abvPct}
-            onChange={(e) => {
-              setAbvPct(e.target.value);
-              setPreset(null);
-            }}
-            className={inputClass}
-          />
-          %
-        </label>
-        </div>
-      </div>
-      <div className="flex items-center justify-between gap-2 text-sm">
-        {editTime ? (
-          <input
-            type="datetime-local"
-            value={time}
-            onChange={(e) => setTime(e.target.value)}
-            className={inputClass}
-          />
-        ) : (
+        <span className="text-sm text-zinc-500">Size</span>
+        <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={() => {
-              setTime(toLocalInput(Date.now()));
-              setEditTime(true);
-            }}
-            className="text-zinc-500 underline decoration-dotted underline-offset-4"
+            onClick={() => bump(-STEP)}
+            disabled={std <= MIN}
+            className={`${buttonSecondary} w-14 text-xl leading-none`}
+            aria-label="Decrease"
           >
-            Time: now (tap to change)
+            −
           </button>
-        )}
+          <div className="flex flex-1 flex-col items-center">
+            <span className="font-mono text-4xl font-semibold tabular-nums">{std.toFixed(1)}</span>
+            <span className="text-xs text-zinc-500">standard drink{std.toFixed(1) === '1.0' ? '' : 's'}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => bump(STEP)}
+            disabled={std >= MAX}
+            className={`${buttonSecondary} w-14 text-xl leading-none`}
+            aria-label="Increase"
+          >
+            +
+          </button>
+        </div>
+        <p className="text-xs text-zinc-400">
+          1 standard drink ≈ 12 oz beer, 5 oz wine, or a 1.5 oz shot.
+        </p>
       </div>
-      <button type="submit" disabled={!valid} className={buttonPrimary}>
-        Add {valid ? `· ${std.toFixed(1)} std drink${std >= 1.05 || std < 0.95 ? 's' : ''}` : ''}
+
+      <label className="flex flex-col gap-2 text-sm">
+        <span className="text-zinc-500">Time</span>
+        <select value={when} onChange={(e) => setWhen(e.target.value)} className={inputClass}>
+          <option value="now">Now</option>
+          {slots.map((t) => (
+            <option key={t} value={String(t)}>
+              {formatTime(t)} · {agoLabel(openedAt - t)}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <button type="submit" className={buttonPrimary}>
+        Add drink
       </button>
     </form>
   );

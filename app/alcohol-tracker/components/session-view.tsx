@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
-import { estimate, stageFor, standardDrinks } from '../lib/bac';
+import { estimate, stageFor } from '../lib/bac';
 import { deleteSession, removeDrink, updateSession, useHydrated, useProfile, useSession } from '../lib/storage';
 import { BacChart, type ScrubPoint } from './bac-chart';
 import { ProfileForm } from './profile-form';
@@ -38,7 +38,7 @@ export function SessionView({ id }: { id: string }) {
 
   const shownBac = scrub ? scrub.bac : est.bac;
   const stage = stageFor(shownBac);
-  const totalStd = session.drinks.reduce((sum, d) => sum + standardDrinks(d), 0);
+  const totalStd = session.drinks.reduce((sum, d) => sum + d.standardDrinks, 0);
   const drinks = [...session.drinks].sort((a, b) => b.time - a.time);
 
   return (
@@ -130,11 +130,10 @@ export function SessionView({ id }: { id: string }) {
             {drinks.map((d) => (
               <li key={d.id} className="flex items-center gap-3 px-4 py-3">
                 <div className="flex min-w-0 flex-1 flex-col">
-                  <span className="truncate">{d.label}</span>
-                  <span className="text-xs text-zinc-500">
-                    {formatTime(d.time)} · {(d.volumeMl / 29.5735).toFixed(1)} oz ·{' '}
-                    {(d.abv * 100).toFixed(1)}% · {standardDrinks(d).toFixed(1)} std
+                  <span>
+                    {d.standardDrinks.toFixed(1)} standard drink{d.standardDrinks.toFixed(1) === '1.0' ? '' : 's'}
                   </span>
+                  <span className="text-xs text-zinc-500">{formatTime(d.time)}</span>
                 </div>
                 <button
                   type="button"
@@ -143,7 +142,7 @@ export function SessionView({ id }: { id: string }) {
                     refreshNow();
                   }}
                   className="rounded-md px-2 py-1 text-sm text-zinc-500 hover:bg-zinc-100 hover:text-red-600"
-                  aria-label={`Remove ${d.label}`}
+                  aria-label={`Remove drink at ${formatTime(d.time)}`}
                 >
                   ✕
                 </button>

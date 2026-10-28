@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { estimate, stageFor, standardDrinks } from '../lib/bac';
+import { estimate, stageFor } from '../lib/bac';
 import { createSession, useHydrated, useProfile, useSessions } from '../lib/storage';
 import { ProfileForm } from './profile-form';
 import { useNow } from './use-now';
@@ -40,7 +40,7 @@ export function SessionList() {
             {sessions.map((s) => {
               const est = estimate(s.drinks, profile, now);
               const active = est.bac > 0;
-              const total = s.drinks.reduce((sum, d) => sum + standardDrinks(d), 0);
+              const total = s.drinks.reduce((sum, d) => sum + d.standardDrinks, 0);
               return (
                 <li key={s.id}>
                   <Link
