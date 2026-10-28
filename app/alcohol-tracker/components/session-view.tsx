@@ -133,7 +133,10 @@ export function SessionView({ id }: { id: string }) {
                   <span>
                     {d.standardDrinks.toFixed(1)} standard drink{d.standardDrinks.toFixed(1) === '1.0' ? '' : 's'}
                   </span>
-                  <span className="text-xs text-zinc-500">{formatTime(d.time)}</span>
+                  <span className="text-xs text-zinc-500">
+                    {formatTime(d.time)}
+                    {d.time > now && ' · planned'}
+                  </span>
                 </div>
                 <button
                   type="button"

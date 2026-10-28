@@ -11,6 +11,7 @@ const MAX = 10;
 const DEFAULT_STD = 1.5;
 const SLOT_MS = 30 * 60_000;
 const HOURS_BACK = 12;
+const HOURS_AHEAD = 6;
 
 /** Most recent clock time at or before `now` on a :00 / :30 boundary. */
 function floorToSlot(now: number): number {
@@ -20,13 +21,12 @@ function floorToSlot(now: number): number {
   return d.getTime();
 }
 
-function agoLabel(ms: number): string {
-  const mins = Math.round(ms / 60_000);
+function spanLabel(ms: number): string {
+  const mins = Math.round(Math.abs(ms) / 60_000);
   const h = Math.floor(mins / 60);
   const m = mins % 60;
-  if (h === 0) return `${m} min ago`;
-  if (m === 0) return `${h} hr ago`;
-  return `${h} hr ${m} min ago`;
+  const span = h === 0 ? `${m} min` : m === 0 ? `${h} hr` : `${h} hr ${m} min`;
+  return ms < 0 ? `in ${span}` : `${span} ago`;
 }
 
 type Props = {
@@ -43,11 +43,13 @@ export function DrinkForm({ sessionId, drinks, profile, onAdded }: Props) {
 
   // Capture `now` once per mount so the option list doesn't shift under the user.
   const [openedAt] = useState(() => Date.now());
-  const slots = useMemo(() => {
-    const out: number[] = [];
-    const first = floorToSlot(openedAt);
-    for (let t = first; t >= openedAt - HOURS_BACK * 3_600_000; t -= SLOT_MS) out.push(t);
-    return out;
+  const { past, future } = useMemo(() => {
+    const past: number[] = [];
+    const future: number[] = [];
+    const last = floorToSlot(openedAt);
+    for (let t = last; t >= openedAt - HOURS_BACK * 3_600_000; t -= SLOT_MS) past.push(t);
+    for (let t = last + SLOT_MS; t <= openedAt + HOURS_AHEAD * 3_600_000; t += SLOT_MS) future.push(t);
+    return { past, future };
   }, [openedAt]);
 
   // Where the session would peak with this drink added, versus without it.
@@ -111,11 +113,20 @@ export function DrinkForm({ sessionId, drinks, profile, onAdded }: Props) {
         <span className="text-zinc-500">Time</span>
         <select value={when} onChange={(e) => setWhen(e.target.value)} className={inputClass}>
           <option value="now">Now</option>
-          {slots.map((t) => (
-            <option key={t} value={String(t)}>
-              {formatTime(t)} · {agoLabel(openedAt - t)}
-            </option>
-          ))}
+          <optgroup label="Later">
+            {future.map((t) => (
+              <option key={t} value={String(t)}>
+                {formatTime(t)} · {spanLabel(openedAt - t)}
+              </option>
+            ))}
+          </optgroup>
+          <optgroup label="Earlier">
+            {past.map((t) => (
+              <option key={t} value={String(t)}>
+                {formatTime(t)} · {spanLabel(openedAt - t)}
+              </option>
+            ))}
+          </optgroup>
         </select>
       </label>
 

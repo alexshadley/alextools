@@ -93,7 +93,7 @@ export function BacChart({ drinks, profile, now, onScrub }: Props) {
     let peakIdx = 0;
     for (let i = 1; i < curve.length; i++) if (curve[i][1] > curve[peakIdx][1]) peakIdx = i;
 
-    const x0 = curve[0][0] - DOMAIN_PAD_MS;
+    const x0 = Math.min(curve[0][0], now) - DOMAIN_PAD_MS;
     const x1 = curve[curve.length - 1][0] + DOMAIN_PAD_MS;
     const yMax = Math.max(curve[peakIdx][1], 0.02) * 1.1;
     return { curve, peakIdx, x0, x1, yMax };
@@ -250,11 +250,18 @@ export function BacChart({ drinks, profile, now, onScrub }: Props) {
             />
           ))}
 
-          {/* Now marker */}
-          {nowIdx >= 0 && scrub === null && (
+          {/* Now marker (sits on the baseline if every drink is still ahead) */}
+          {scrub === null && now <= curve[curve.length - 1][0] && (
             <>
-              <line x1={x(curve[nowIdx][0])} x2={x(curve[nowIdx][0])} y1={PAD.top} y2={baseline} stroke={INK.grid} strokeWidth={1} />
-              <circle cx={x(curve[nowIdx][0])} cy={y(curve[nowIdx][1])} r={4} fill={INK.primary} stroke={SURFACE} strokeWidth={2} />
+              <line x1={x(now)} x2={x(now)} y1={PAD.top} y2={baseline} stroke={INK.grid} strokeWidth={1} />
+              <circle
+                cx={x(now)}
+                cy={nowIdx >= 0 ? y(curve[nowIdx][1]) : baseline}
+                r={4}
+                fill={INK.primary}
+                stroke={SURFACE}
+                strokeWidth={2}
+              />
             </>
           )}
 
