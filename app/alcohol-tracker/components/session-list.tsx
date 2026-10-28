@@ -2,11 +2,11 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { estimate, stageFor } from '../lib/bac';
+import { estimate, zoneFor } from '../lib/bac';
 import { createSession, useHydrated, useProfile, useSessions } from '../lib/storage';
 import { ProfileForm } from './profile-form';
 import { useNow } from './use-now';
-import { StageBadge, buttonPrimary, formatBac } from './ui';
+import { ZoneBadge, buttonPrimary, formatBac } from './ui';
 
 export function SessionList() {
   const hydrated = useHydrated();
@@ -63,7 +63,7 @@ export function SessionList() {
                     {active ? (
                       <div className="flex flex-col items-end gap-1">
                         <span className="font-mono text-sm tabular-nums">{formatBac(est.bac)}%</span>
-                        <StageBadge stage={stageFor(est.bac)} />
+                        <ZoneBadge zone={zoneFor(est.bac)} />
                       </div>
                     ) : (
                       <span className="text-zinc-400">›</span>

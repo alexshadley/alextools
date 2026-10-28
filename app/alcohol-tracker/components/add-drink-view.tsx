@@ -2,12 +2,13 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useHydrated, useSession } from '../lib/storage';
+import { useHydrated, useProfile, useSession } from '../lib/storage';
 import { DrinkForm } from './drink-form';
 
 export function AddDrinkView({ id }: { id: string }) {
   const hydrated = useHydrated();
   const session = useSession(id);
+  const profile = useProfile();
   const router = useRouter();
   const back = `/alcohol-tracker/session/${id}`;
 
@@ -31,7 +32,7 @@ export function AddDrinkView({ id }: { id: string }) {
         </Link>
         <h1 className="text-2xl font-semibold tracking-tight">Add a drink</h1>
       </header>
-      <DrinkForm sessionId={id} onAdded={() => router.push(back)} />
+      <DrinkForm sessionId={id} drinks={session.drinks} profile={profile} onAdded={() => router.push(back)} />
     </>
   );
 }

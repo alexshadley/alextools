@@ -90,6 +90,8 @@ export type Estimate = {
   bac: number;
   /** Peak %BAC reached so far or projected (whichever is higher) */
   peak: number;
+  /** Unix ms of the peak, or null with no drinks */
+  peakAt: number | null;
   /** Unix ms when BAC is projected to drop below 0.08, or null if already below */
   legalAt: number | null;
   /** Unix ms when BAC is projected to reach 0, or null if already 0 */
@@ -100,7 +102,7 @@ export type Estimate = {
 
 export function estimate(drinks: Drink[], profile: Profile, now: number): Estimate {
   if (drinks.length === 0) {
-    return { bac: 0, peak: 0, legalAt: null, soberAt: null, rising: false };
+    return { bac: 0, peak: 0, peakAt: null, legalAt: null, soberAt: null, rising: false };
   }
   // Project far enough ahead to find sobriety: 24h after the last drink.
   const lastDrink = Math.max(...drinks.map((d) => d.time));
@@ -109,12 +111,16 @@ export function estimate(drinks: Drink[], profile: Profile, now: number): Estima
 
   let bac = 0;
   let peak = 0;
+  let peakAt: number | null = null;
   let legalAt: number | null = null;
   let soberAt: number | null = null;
   let nowIdx = -1;
   for (let i = 0; i < curve.length; i++) {
     const [t, v] = curve[i];
-    if (v > peak) peak = v;
+    if (v > peak) {
+      peak = v;
+      peakAt = t;
+    }
     if (t <= now) {
       bac = v;
       nowIdx = i;
@@ -122,7 +128,7 @@ export function estimate(drinks: Drink[], profile: Profile, now: number): Estima
   }
   if (nowIdx === -1) {
     // All drinks are in the future.
-    return { bac: 0, peak, legalAt: null, soberAt: null, rising: false };
+    return { bac: 0, peak, peakAt, legalAt: null, soberAt: null, rising: false };
   }
   const rising = nowIdx + 1 < curve.length && curve[nowIdx + 1][1] > bac;
 
@@ -142,47 +148,56 @@ export function estimate(drinks: Drink[], profile: Profile, now: number): Estima
       }
     }
   }
-  return { bac, peak, legalAt, soberAt, rising };
+  return { bac, peak, peakAt, legalAt, soberAt, rising };
 }
 
-export type Stage = {
+export type ZoneKey = 'green' | 'yellow' | 'red' | 'purple';
+
+export type Zone = {
+  key: ZoneKey;
   label: string;
   description: string;
-  /** Tailwind color classes for the stage badge */
-  tone: 'zinc' | 'green' | 'yellow' | 'orange' | 'red';
+  /** Lower bound (inclusive) in %BAC */
+  min: number;
+  /** Chart mark color on a light surface */
+  color: string;
 };
 
-export function stageFor(bac: number): Stage {
-  if (bac < 0.01) return { label: 'Sober', description: 'No measurable effect.', tone: 'zinc' };
-  if (bac < 0.03)
-    return { label: 'Light', description: 'Mild relaxation, slight mood lift.', tone: 'green' };
-  if (bac < 0.06)
-    return {
-      label: 'Buzzed',
-      description: 'Lowered inhibition, warmth, minor impairment of judgment.',
-      tone: 'green',
-    };
-  if (bac < 0.08)
-    return {
-      label: 'Tipsy',
-      description: 'Reduced coordination and reaction time. Do not drive.',
-      tone: 'yellow',
-    };
-  if (bac < 0.15)
-    return {
-      label: 'Drunk',
-      description: 'Over the legal limit. Clear impairment of balance, speech, and judgment.',
-      tone: 'orange',
-    };
-  if (bac < 0.25)
-    return {
-      label: 'Very drunk',
-      description: 'Severe impairment. Nausea, confusion, risk of blackout.',
-      tone: 'red',
-    };
-  return {
-    label: 'Danger',
-    description: 'Risk of alcohol poisoning. Seek help if someone is unresponsive.',
-    tone: 'red',
-  };
+/** Inebriation zones, ordered by rising BAC. */
+export const ZONES: Zone[] = [
+  { key: 'green', label: 'Green zone', description: 'Little to no impairment.', min: 0, color: '#16a34a' },
+  {
+    key: 'yellow',
+    label: 'Yellow zone',
+    description: 'Buzzed to tipsy. Judgment and coordination are impaired. Do not drive.',
+    min: 0.05,
+    color: '#ca8a04',
+  },
+  {
+    key: 'red',
+    label: 'Red zone',
+    description: 'Drunk. Clear impairment of balance, speech, and judgment.',
+    min: 0.1,
+    color: '#dc2626',
+  },
+  {
+    key: 'purple',
+    label: 'Purple zone',
+    description: 'Very drunk. Risk of blackout and alcohol poisoning.',
+    min: 0.15,
+    color: '#9333ea',
+  },
+];
+
+/** Zone boundaries above zero, in ascending order. */
+export const ZONE_THRESHOLDS = ZONES.slice(1).map((z) => z.min);
+
+export function zoneFor(bac: number): Zone {
+  let zone = ZONES[0];
+  for (const z of ZONES) if (bac >= z.min) zone = z;
+  return zone;
+}
+
+export function zoneIndex(zone: Zone): number {
+  return ZONES.indexOf(zone);
 }

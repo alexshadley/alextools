@@ -1,8 +1,9 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { estimate, zoneFor, zoneIndex, type Drink, type Profile } from '../lib/bac';
 import { addDrink } from '../lib/storage';
-import { buttonPrimary, buttonSecondary, formatTime, inputClass } from './ui';
+import { ZoneBadge, buttonPrimary, buttonSecondary, formatBac, formatTime, inputClass } from './ui';
 
 const STEP = 0.5;
 const MIN = 0.5;
@@ -28,7 +29,14 @@ function agoLabel(ms: number): string {
   return `${h} hr ${m} min ago`;
 }
 
-export function DrinkForm({ sessionId, onAdded }: { sessionId: string; onAdded?: () => void }) {
+type Props = {
+  sessionId: string;
+  drinks: Drink[];
+  profile: Profile;
+  onAdded?: () => void;
+};
+
+export function DrinkForm({ sessionId, drinks, profile, onAdded }: Props) {
   const [std, setStd] = useState(DEFAULT_STD);
   // 'now' or a slot timestamp as a string (select values are strings).
   const [when, setWhen] = useState<string>('now');
@@ -41,6 +49,20 @@ export function DrinkForm({ sessionId, onAdded }: { sessionId: string; onAdded?:
     for (let t = first; t >= openedAt - HOURS_BACK * 3_600_000; t -= SLOT_MS) out.push(t);
     return out;
   }, [openedAt]);
+
+  // Where the session would peak with this drink added, versus without it.
+  const preview = useMemo(() => {
+    const time = when === 'now' ? openedAt : Number(when);
+    const candidate: Drink = { id: 'preview', standardDrinks: std, time };
+    const withDrink = estimate([...drinks, candidate], profile, openedAt);
+    const without = estimate(drinks, profile, openedAt);
+    return {
+      peak: withDrink.peak,
+      peakAt: withDrink.peakAt,
+      zone: zoneFor(withDrink.peak),
+      currentZone: drinks.length > 0 ? zoneFor(without.peak) : null,
+    };
+  }, [drinks, profile, std, when, openedAt]);
 
   const bump = (delta: number) =>
     setStd((v) => Math.min(MAX, Math.max(MIN, Math.round((v + delta) / STEP) * STEP)));
@@ -96,6 +118,27 @@ export function DrinkForm({ sessionId, onAdded }: { sessionId: string; onAdded?:
           ))}
         </select>
       </label>
+
+      <div
+        className="flex flex-col gap-1.5 rounded-lg border-l-4 bg-zinc-50 px-3 py-2.5"
+        style={{ borderColor: preview.zone.color }}
+      >
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-sm text-zinc-700">You&apos;d peak in the</span>
+          <ZoneBadge zone={preview.zone} />
+        </div>
+        <p className="text-xs text-zinc-500">
+          <span className="font-mono tabular-nums">{formatBac(preview.peak)}%</span>
+          {preview.peakAt !== null && <> at {formatTime(preview.peakAt)}</>}
+          {preview.currentZone && zoneIndex(preview.zone) > zoneIndex(preview.currentZone) && (
+            <> · up from the {preview.currentZone.label.toLowerCase()}</>
+          )}
+          {preview.currentZone && zoneIndex(preview.zone) === zoneIndex(preview.currentZone) && (
+            <> · same zone as without it</>
+          )}
+        </p>
+        <p className="text-xs text-zinc-500">{preview.zone.description}</p>
+      </div>
 
       <button type="submit" className={buttonPrimary}>
         Add drink

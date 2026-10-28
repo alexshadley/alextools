@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Drink, Profile } from '../lib/bac';
-import { simulate } from '../lib/bac';
+import { simulate, zoneFor, ZONE_THRESHOLDS } from '../lib/bac';
 import { formatBac, formatTime } from './ui';
 
 export type ScrubPoint = { time: number; bac: number };
@@ -24,8 +24,42 @@ const FONT = 'var(--font-geist-sans), system-ui, sans-serif';
 const MIN_MS = 60_000;
 const DOMAIN_PAD_MS = 10 * MIN_MS;
 
-// Marks wear the accent; text wears zinc text tokens.
-const ACCENT = '#f59e0b';
+// Marks wear the zone color at that BAC; text wears zinc text tokens.
+type Pt = [number, number];
+type Seg = { color: string; future: boolean; pts: Pt[] };
+
+/**
+ * Split the curve into runs that share a zone color and a past/future flag,
+ * inserting interpolated points exactly where the curve crosses a threshold
+ * so adjacent segments meet at the boundary.
+ */
+function splitByZone(curve: Pt[], nowIdx: number): Seg[] {
+  const segs: Seg[] = [];
+  const push = (a: Pt, b: Pt, future: boolean) => {
+    const color = zoneFor((a[1] + b[1]) / 2).color;
+    const last = segs[segs.length - 1];
+    if (last && last.color === color && last.future === future) last.pts.push(b);
+    else segs.push({ color, future, pts: [a, b] });
+  };
+  for (let i = 0; i + 1 < curve.length; i++) {
+    const [t0, v0] = curve[i];
+    const [t1, v1] = curve[i + 1];
+    const future = i >= nowIdx;
+    const lo = Math.min(v0, v1);
+    const hi = Math.max(v0, v1);
+    const crossings = ZONE_THRESHOLDS.filter((th) => th > lo && th < hi);
+    if (v0 > v1) crossings.reverse();
+    let prev: Pt = [t0, v0];
+    for (const th of crossings) {
+      const t = t0 + ((th - v0) / (v1 - v0)) * (t1 - t0);
+      const pt: Pt = [t, th];
+      push(prev, pt, future);
+      prev = pt;
+    }
+    push(prev, [t1, v1], future);
+  }
+  return segs;
+}
 const SURFACE = '#ffffff';
 const INK = { primary: '#18181b', secondary: '#52525b', muted: '#71717a', grid: '#d4d4d8' };
 
@@ -85,13 +119,13 @@ export function BacChart({ drinks, profile, now, onScrub }: Props) {
 
   // Past / future split at `now`.
   const nowIdx = now >= curve[0][0] ? idxAt(now) : -1;
-  const pathOf = (pts: Array<[number, number]>) =>
+  const pathOf = (pts: Pt[]) =>
     pts.map(([t, v], i) => `${i === 0 ? 'M' : 'L'}${x(t).toFixed(1)},${y(v).toFixed(1)}`).join('');
-  const pastPts = nowIdx >= 0 ? curve.slice(0, nowIdx + 1) : [];
-  const futurePts = nowIdx >= 0 ? curve.slice(nowIdx) : curve;
-  const areaPath =
-    pathOf(curve) +
-    `L${x(curve[curve.length - 1][0]).toFixed(1)},${baseline}L${x(curve[0][0]).toFixed(1)},${baseline}Z`;
+  const areaOf = (pts: Pt[]) =>
+    pathOf(pts) +
+    `L${x(pts[pts.length - 1][0]).toFixed(1)},${baseline}L${x(pts[0][0]).toFixed(1)},${baseline}Z`;
+  const segments = splitByZone(curve, nowIdx);
+  const thresholds = ZONE_THRESHOLDS.filter((th) => th < yMax);
 
   // Hour ticks along the bottom.
   const spanH = (x1 - x0) / 3_600_000;
@@ -108,7 +142,7 @@ export function BacChart({ drinks, profile, now, onScrub }: Props) {
   }
 
   // Drink annotations: dot on the curve + label, staggered on two rows when crowded.
-  type Label = { cx: number; cy: number; tx: number; text: string; row: number };
+  type Label = { cx: number; cy: number; tx: number; text: string; row: number; color: string };
   const labels: Label[] = [];
   const rowEnd = DRINK_ROW_Y.map(() => -Infinity);
   const sortedDrinks = [...drinks].sort((a, b) => a.time - b.time);
@@ -123,12 +157,12 @@ export function BacChart({ drinks, profile, now, onScrub }: Props) {
     let row = rowEnd.findIndex((end) => left >= end);
     if (row === -1) row = rowEnd.indexOf(Math.min(...rowEnd));
     rowEnd[row] = tx + w / 2;
-    labels.push({ cx, cy: y(curve[i][1]), tx, text, row });
+    labels.push({ cx, cy: y(curve[i][1]), tx, text, row, color: zoneFor(curve[i][1]).color });
   }
 
   const peak = curve[peakIdx];
   const peakX = x(peak[0]);
-  const peakLabel = `Peak ${formatBac(peak[1])} · ${formatTime(peak[0])}`;
+  const peakLabel = `Peak ${formatBac(peak[1])} · ${formatTime(peak[0])} · ${zoneFor(peak[1]).label}`;
   const peakAnchor: 'start' | 'middle' | 'end' =
     peakX < PAD.left + 70 ? 'start' : peakX > W - PAD.right - 70 ? 'end' : 'middle';
 
@@ -187,24 +221,34 @@ export function BacChart({ drinks, profile, now, onScrub }: Props) {
             </g>
           ))}
 
-          {/* Area wash */}
-          <path d={areaPath} fill={ACCENT} fillOpacity={0.12} />
+          {/* Zone boundaries */}
+          {thresholds.map((th) => (
+            <g key={th}>
+              <line x1={PAD.left} x2={W - PAD.right} y1={y(th)} y2={y(th)} stroke={INK.grid} strokeWidth={1} />
+              <text x={W - PAD.right} y={y(th) - 3} textAnchor="end" fontSize={9} fill={INK.muted} fontFamily={FONT}>
+                {th.toFixed(2)}
+              </text>
+            </g>
+          ))}
 
-          {/* Curve: solid past, lighter projection */}
-          {pastPts.length > 1 && (
-            <path d={pathOf(pastPts)} fill="none" stroke={ACCENT} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
-          )}
-          {futurePts.length > 1 && (
+          {/* Area wash, colored by zone */}
+          {segments.map((seg, i) => (
+            <path key={i} d={areaOf(seg.pts)} fill={seg.color} fillOpacity={seg.future ? 0.07 : 0.14} />
+          ))}
+
+          {/* Curve: solid past, lighter projection, colored by zone */}
+          {segments.map((seg, i) => (
             <path
-              d={pathOf(futurePts)}
+              key={i}
+              d={pathOf(seg.pts)}
               fill="none"
-              stroke={ACCENT}
-              strokeOpacity={0.45}
+              stroke={seg.color}
+              strokeOpacity={seg.future ? 0.5 : 1}
               strokeWidth={2}
               strokeLinejoin="round"
               strokeLinecap="round"
             />
-          )}
+          ))}
 
           {/* Now marker */}
           {nowIdx >= 0 && scrub === null && (
@@ -223,7 +267,7 @@ export function BacChart({ drinks, profile, now, onScrub }: Props) {
           {/* Drink markers + labels */}
           {labels.map((l, i) => (
             <g key={i}>
-              <circle cx={l.cx} cy={l.cy} r={4} fill={ACCENT} stroke={SURFACE} strokeWidth={2} />
+              <circle cx={l.cx} cy={l.cy} r={4} fill={l.color} stroke={SURFACE} strokeWidth={2} />
               <text
                 x={l.tx}
                 y={DRINK_ROW_Y[l.row]}
@@ -242,7 +286,7 @@ export function BacChart({ drinks, profile, now, onScrub }: Props) {
 
           {/* Peak annotation */}
           <g>
-            <circle cx={peakX} cy={y(peak[1])} r={4} fill={ACCENT} stroke={SURFACE} strokeWidth={2} />
+            <circle cx={peakX} cy={y(peak[1])} r={4} fill={zoneFor(peak[1]).color} stroke={SURFACE} strokeWidth={2} />
             <text
               x={peakX}
               y={PEAK_ROW_Y}

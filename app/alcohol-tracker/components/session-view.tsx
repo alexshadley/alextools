@@ -3,11 +3,11 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
-import { estimate, stageFor } from '../lib/bac';
+import { estimate, zoneFor } from '../lib/bac';
 import { deleteSession, removeDrink, updateSession, useHydrated, useProfile, useSession } from '../lib/storage';
 import { BacChart, type ScrubPoint } from './bac-chart';
 import { ProfileForm } from './profile-form';
-import { StageBadge, buttonPrimary, buttonSecondary, formatBac, formatDuration, formatTime, inputClass } from './ui';
+import { ZoneBadge, buttonPrimary, buttonSecondary, formatBac, formatDuration, formatTime, inputClass } from './ui';
 import { useNow } from './use-now';
 
 export function SessionView({ id }: { id: string }) {
@@ -37,7 +37,7 @@ export function SessionView({ id }: { id: string }) {
   }
 
   const shownBac = scrub ? scrub.bac : est.bac;
-  const stage = stageFor(shownBac);
+  const zone = zoneFor(shownBac);
   const totalStd = session.drinks.reduce((sum, d) => sum + d.standardDrinks, 0);
   const drinks = [...session.drinks].sort((a, b) => b.time - a.time);
 
@@ -79,14 +79,14 @@ export function SessionView({ id }: { id: string }) {
           <span className="text-sm text-zinc-500">
             {scrub ? `At ${formatTime(scrub.time)}` : 'Estimated BAC now'}
           </span>
-          <StageBadge stage={stage} />
+          <ZoneBadge zone={zone} />
         </div>
         <div className="flex items-baseline gap-2 px-4">
           <span className="font-mono text-5xl font-semibold tabular-nums">{formatBac(shownBac)}</span>
           <span className="text-zinc-500">%</span>
           {!scrub && est.rising && <span className="text-sm text-amber-600">↑ rising</span>}
         </div>
-        <p className="min-h-10 px-4 text-sm text-zinc-500">{stage.description}</p>
+        <p className="min-h-10 px-4 text-sm text-zinc-500">{zone.description}</p>
         <div className="px-2">
           <BacChart drinks={session.drinks} profile={profile} now={now} onScrub={setScrub} />
         </div>

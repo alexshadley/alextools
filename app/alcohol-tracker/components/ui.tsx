@@ -1,6 +1,6 @@
 'use client';
 
-import type { Stage } from '../lib/bac';
+import type { Zone, ZoneKey } from '../lib/bac';
 
 export const inputClass =
   'w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-base text-zinc-900 outline-none focus:border-amber-500';
@@ -11,20 +11,20 @@ export const buttonPrimary =
 export const buttonSecondary =
   'rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-base text-zinc-900 transition-colors hover:bg-zinc-100 active:bg-zinc-200';
 
-const toneClasses: Record<Stage['tone'], string> = {
-  zinc: 'bg-zinc-100 text-zinc-700',
-  green: 'bg-emerald-100 text-emerald-800',
+const zoneClasses: Record<ZoneKey, string> = {
+  green: 'bg-green-100 text-green-800',
   yellow: 'bg-yellow-100 text-yellow-800',
-  orange: 'bg-orange-100 text-orange-800',
   red: 'bg-red-100 text-red-800',
+  purple: 'bg-purple-100 text-purple-800',
 };
 
-export function StageBadge({ stage }: { stage: Stage }) {
+export function ZoneBadge({ zone }: { zone: Zone }) {
   return (
     <span
-      className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${toneClasses[stage.tone]}`}
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${zoneClasses[zone.key]}`}
     >
-      {stage.label}
+      <span className="size-2 rounded-full" style={{ background: zone.color }} aria-hidden />
+      {zone.label}
     </span>
   );
 }
