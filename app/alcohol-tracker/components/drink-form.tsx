@@ -49,7 +49,6 @@ export function DrinkForm({ sessionId, onAdded }: { sessionId: string; onAdded?:
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-3 rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
-      <h2 className="text-sm font-medium">Add a drink</h2>
       <div className="grid grid-cols-3 gap-2">
         {PRESETS.map((p) => (
           <button

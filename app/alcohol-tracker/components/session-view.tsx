@@ -5,10 +5,10 @@ import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { estimate, stageFor, standardDrinks } from '../lib/bac';
 import { deleteSession, removeDrink, updateSession, useHydrated, useProfile, useSession } from '../lib/storage';
-import { DrinkForm } from './drink-form';
+import { BacChart, type ScrubPoint } from './bac-chart';
 import { ProfileForm } from './profile-form';
+import { StageBadge, buttonPrimary, buttonSecondary, formatBac, formatDuration, formatTime, inputClass } from './ui';
 import { useNow } from './use-now';
-import { StageBadge, buttonSecondary, formatBac, formatDuration, formatTime, inputClass } from './ui';
 
 export function SessionView({ id }: { id: string }) {
   const hydrated = useHydrated();
@@ -17,6 +17,7 @@ export function SessionView({ id }: { id: string }) {
   const router = useRouter();
   const [now, refreshNow] = useNow();
   const [renaming, setRenaming] = useState(false);
+  const [scrub, setScrub] = useState<ScrubPoint | null>(null);
 
   const est = useMemo(
     () => (session ? estimate(session.drinks, profile, now) : null),
@@ -35,7 +36,8 @@ export function SessionView({ id }: { id: string }) {
     );
   }
 
-  const stage = stageFor(est.bac);
+  const shownBac = scrub ? scrub.bac : est.bac;
+  const stage = stageFor(shownBac);
   const totalStd = session.drinks.reduce((sum, d) => sum + standardDrinks(d), 0);
   const drinks = [...session.drinks].sort((a, b) => b.time - a.time);
 
@@ -72,44 +74,52 @@ export function SessionView({ id }: { id: string }) {
         )}
       </header>
 
-      <section className="flex flex-col gap-3 rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
-        <div className="flex items-baseline justify-between">
-          <span className="text-sm text-zinc-400">Estimated BAC</span>
+      <section className="flex flex-col gap-2 rounded-xl border border-zinc-800 bg-zinc-900/50 pt-4">
+        <div className="flex items-baseline justify-between px-4">
+          <span className="text-sm text-zinc-400">
+            {scrub ? `At ${formatTime(scrub.time)}` : 'Estimated BAC now'}
+          </span>
           <StageBadge stage={stage} />
         </div>
-        <div className="flex items-baseline gap-2">
-          <span className="font-mono text-5xl font-semibold tabular-nums">{formatBac(est.bac)}</span>
+        <div className="flex items-baseline gap-2 px-4">
+          <span className="font-mono text-5xl font-semibold tabular-nums">{formatBac(shownBac)}</span>
           <span className="text-zinc-400">%</span>
-          {est.rising && <span className="text-sm text-amber-400">↑ rising</span>}
+          {!scrub && est.rising && <span className="text-sm text-amber-400">↑ rising</span>}
         </div>
-        <p className="text-sm text-zinc-400">{stage.description}</p>
-        <dl className="grid grid-cols-2 gap-x-4 gap-y-2 border-t border-zinc-800 pt-3 text-sm">
-          <dt className="text-zinc-400">Drinks</dt>
-          <dd className="text-right tabular-nums">
-            {session.drinks.length} · {totalStd.toFixed(1)} std
-          </dd>
-          <dt className="text-zinc-400">Peak</dt>
-          <dd className="text-right font-mono tabular-nums">{formatBac(est.peak)}%</dd>
-          {est.legalAt !== null && (
-            <>
-              <dt className="text-zinc-400">Under 0.08</dt>
-              <dd className="text-right tabular-nums">
-                {formatTime(est.legalAt)} · {formatDuration(est.legalAt - now)}
-              </dd>
-            </>
-          )}
-          {est.soberAt !== null && (
-            <>
-              <dt className="text-zinc-400">Sober</dt>
-              <dd className="text-right tabular-nums">
-                {formatTime(est.soberAt)} · {formatDuration(est.soberAt - now)}
-              </dd>
-            </>
-          )}
-        </dl>
+        <p className="min-h-10 px-4 text-sm text-zinc-400">{stage.description}</p>
+        <div className="px-2">
+          <BacChart drinks={session.drinks} profile={profile} now={now} onScrub={setScrub} />
+        </div>
       </section>
 
-      <DrinkForm sessionId={id} onAdded={refreshNow} />
+      <Link href={`/alcohol-tracker/session/${id}/add`} className={`${buttonPrimary} text-center`}>
+        + Add drink
+      </Link>
+
+      <dl className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 text-sm">
+        <dt className="text-zinc-400">Drinks</dt>
+        <dd className="text-right tabular-nums">
+          {session.drinks.length} · {totalStd.toFixed(1)} std
+        </dd>
+        <dt className="text-zinc-400">Peak</dt>
+        <dd className="text-right font-mono tabular-nums">{formatBac(est.peak)}%</dd>
+        {est.legalAt !== null && (
+          <>
+            <dt className="text-zinc-400">Under 0.08</dt>
+            <dd className="text-right tabular-nums">
+              {formatTime(est.legalAt)} · {formatDuration(est.legalAt - now)}
+            </dd>
+          </>
+        )}
+        {est.soberAt !== null && (
+          <>
+            <dt className="text-zinc-400">Sober</dt>
+            <dd className="text-right tabular-nums">
+              {formatTime(est.soberAt)} · {formatDuration(est.soberAt - now)}
+            </dd>
+          </>
+        )}
+      </dl>
 
       <section className="flex flex-col gap-2">
         <h2 className="text-sm font-medium text-zinc-400">Log</h2>
